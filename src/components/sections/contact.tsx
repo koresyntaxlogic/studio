@@ -1,10 +1,9 @@
 'use client';
 
-import { useFormState } from 'react-dom';
-import { useForm, useFormState as useRHFFormState } from 'react-hook-form';
+import { useActionState, useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useEffect, useRef, useState } from 'react';
 
 import { handleContact, type ContactFormState } from '@/app/actions/contact';
 import { Button } from '@/components/ui/button';
@@ -47,7 +46,7 @@ const initialState: ContactFormState = {
 };
 
 export function Contact() {
-  const [formState, formAction] = useFormState(handleContact, initialState);
+  const [formState, formAction] = useActionState(handleContact, initialState);
   const { toast } = useToast();
   const [showSuggestionDialog, setShowSuggestionDialog] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
