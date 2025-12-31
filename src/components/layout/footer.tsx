@@ -1,8 +1,17 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Github, Linkedin, Twitter, Instagram } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Footer() {
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
   const socialLinks = [
     { icon: Linkedin, href: '#' },
     { icon: Github, href: '#' },
@@ -33,7 +42,7 @@ export function Footer() {
           </div>
         </div>
         <div className="text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Kore Syntax Logic. Todos los derechos reservados.
+          &copy; {currentYear} Kore Syntax Logic. Todos los derechos reservados.
         </div>
       </div>
     </footer>
