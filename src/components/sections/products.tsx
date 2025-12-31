@@ -8,23 +8,26 @@ const products = [
   {
     id: 1,
     title: 'Pack Web Corporativa',
-    price: '$499',
-    desc: 'Sitio web profesional listo para comenzar.',
-    features: ['Diseño Responsive', '5 Secciones', 'Formulario de Contacto', 'Hosting Gratis 1 año']
+    price: '$180.000 – $300.000 CLP',
+    desc: 'Sitio web profesional de hasta 5 secciones (Home, Servicios, Nosotros, Portafolio, Contacto).',
+    features: ['Diseño responsive', 'SEO básico', 'Formulario de contacto', 'Hasta 5 secciones'],
+    buttonText: 'Contratar Pack Web Corporativa'
   },
   {
     id: 2,
     title: 'Sistema Web a Medida',
-    price: 'Desde $1,500',
-    desc: 'Panel de administración y gestión de datos.',
-    features: ['Dashboard Personalizado', 'Base de Datos Integrada', 'Gestión de Usuarios', 'API Rest']
+    price: 'Desde $450.000 CLP',
+    desc: 'Desarrollo de sistema web personalizado (login, base de datos, panel administrador, API).',
+    features: ['Integración con servicios', 'Automatizaciones', 'Panel de administrador', 'Base de datos'],
+    buttonText: 'Solicitar Cotización Personalizada'
   },
   {
     id: 3,
     title: 'App Android Starter',
-    price: '$800',
-    desc: 'Aplicación móvil nativa funcional.',
-    features: ['Des. Android Studio', 'Integración API', 'Publicación en PlayStore', 'Soporte Push']
+    price: 'Desde $350.000 CLP',
+    desc: 'Aplicación móvil básica para Android (pantallas, navegación, conexión a API).',
+    features: ['Pantallas y navegación', 'Conexión a API', 'Publicación en Google Play incluida', 'Diseño nativo'],
+    buttonText: 'Contratar App Android Starter'
   }
 ];
 
@@ -69,7 +72,7 @@ export function Products({ onCtaClick }: ProductsProps) {
                     className="w-full font-headline uppercase tracking-wider bg-transparent border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                     onClick={() => onCtaClick(product.title)}
                   >
-                    Comprar / Consultar
+                    {product.buttonText}
                   </Button>
                 </CardFooter>
               </Card>
