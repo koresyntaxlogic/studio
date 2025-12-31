@@ -9,12 +9,18 @@ import { TechStack } from '@/components/sections/tech-stack';
 import { About } from '@/components/sections/about';
 import { Contact } from '@/components/sections/contact';
 import { useToast } from "@/hooks/use-toast";
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function Home() {
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleCtaClick = useCallback((source: string) => {
+    if (!isClient) return;
     const contactSection = document.getElementById('contact');
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: 'smooth' });
@@ -23,7 +29,7 @@ export default function Home() {
       title: 'Interesado en ' + source,
       description: 'Déjanos tus datos y nos pondremos en contacto contigo.',
     });
-  }, [toast]);
+  }, [toast, isClient]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
