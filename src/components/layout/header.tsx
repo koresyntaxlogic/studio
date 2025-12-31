@@ -19,8 +19,15 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
 
@@ -39,8 +46,9 @@ export function Header() {
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isClient]);
 
   const scrollToSection = (id: string) => {
     setMobileOpen(false);
@@ -68,21 +76,23 @@ export function Header() {
         <Link href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }} className="font-headline text-lg font-bold">
           KORE<span className="text-accent">SYNTAX</span>_LOGIC
         </Link>
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.id}
-              href={`#${link.id}`}
-              onClick={(e) => { e.preventDefault(); scrollToSection(link.id); }}
-              className={cn(
-                "text-sm text-muted-foreground hover:text-primary transition-colors relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300",
-                activeSection === link.id && "text-primary after:w-full"
-              )}
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
+        {isClient && (
+          <nav className="hidden md:flex items-center gap-6">
+            {navLinks.map((link) => (
+              <Link
+                key={link.id}
+                href={`#${link.id}`}
+                onClick={(e) => { e.preventDefault(); scrollToSection(link.id); }}
+                className={cn(
+                  "text-sm text-muted-foreground hover:text-primary transition-colors relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300",
+                  activeSection === link.id && "text-primary after:w-full"
+                )}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </nav>
+        )}
         <Button
           variant="ghost"
           size="icon"
