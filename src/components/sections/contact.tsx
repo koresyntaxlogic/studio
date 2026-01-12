@@ -79,13 +79,6 @@ export function Contact() {
     }
   }, [formState, toast, form]);
 
-  const onFormSubmit = (data: ContactFormValues) => {
-    const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('email', data.email);
-    formData.append('message', data.message);
-    formAction(formData);
-  };
 
   return (
     <>
@@ -106,8 +99,8 @@ export function Contact() {
                 <Form {...form}>
                   <form
                     ref={formRef}
-                    action={(formData) => formAction(formData)}
-                    onSubmit={form.handleSubmit(() => onFormSubmit(form.getValues()))}
+                    action={formAction}
+                    onSubmit={form.handleSubmit(() => formAction(new FormData(formRef.current!)))}
                     className="space-y-6"
                   >
                     <FormField
