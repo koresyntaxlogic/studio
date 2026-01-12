@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Send } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { AnimateOnScroll } from '../ui-elements/animate-on-scroll';
 import {
   Form,
@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -30,6 +31,7 @@ type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export function Contact() {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -39,23 +41,34 @@ export function Contact() {
     },
   });
 
-  const onSubmit = (data: ContactFormValues) => {
+  const onSubmit = async (data: ContactFormValues) => {
+    setIsSubmitting(true);
     try {
-      const subject = encodeURIComponent(`Nuevo mensaje de: ${data.name}`);
-      const body = encodeURIComponent(`Nombre: ${data.name}\nEmail: ${data.email}\n\nMensaje:\n${data.message}`);
-      window.location.href = `mailto:koresyntaxlogic@gmail.com?subject=${subject}&body=${body}`;
-      
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error en la respuesta del servidor');
+      }
+
       toast({
         title: "¡Gracias por tu mensaje!",
-        description: "Se ha abierto tu cliente de correo para que puedas enviar el mensaje.",
+        description: "Nos pondremos en contacto contigo pronto.",
       });
       form.reset();
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error al abrir el cliente de correo",
-        description: "No pudimos abrir tu aplicación de correo. Por favor, inténtalo de nuevo o contáctanos directamente.",
+        title: "Error al enviar el mensaje",
+        description: "Hubo un problema al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde o contáctanos directamente.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -88,7 +101,7 @@ export function Contact() {
                         <FormItem>
                           <FormLabel className="font-code">Nombre Completo</FormLabel>
                           <FormControl>
-                            <Input placeholder="John Doe" {...field} />
+                            <Input placeholder="John Doe" {...field} disabled={isSubmitting} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -101,7 +114,7 @@ export function Contact() {
                         <FormItem>
                           <FormLabel className="font-code">Correo Electrónico</FormLabel>
                           <FormControl>
-                            <Input placeholder="ejemplo@correo.com" {...field} />
+                            <Input placeholder="ejemplo@correo.com" {...field} disabled={isSubmitting} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -118,6 +131,7 @@ export function Contact() {
                               placeholder="Necesito una web para mi negocio de..."
                               rows={5}
                               {...field}
+                              disabled={isSubmitting}
                             />
                           </FormControl>
                           <FormMessage />
@@ -128,8 +142,18 @@ export function Contact() {
                       type="submit"
                       className="w-full font-headline uppercase tracking-wider bg-transparent border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                       size="lg"
+                      disabled={isSubmitting}
                     >
-                      Enviar Mensaje <Send className="ml-2 h-4 w-4" />
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          Enviar Mensaje <Send className="ml-2 h-4 w-4" />
+                        </>
+                      )}
                     </Button>
                   </form>
                 </Form>
