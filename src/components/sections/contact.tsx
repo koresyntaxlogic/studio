@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -46,7 +46,7 @@ const initialState: ContactFormState = {
 };
 
 export function Contact() {
-  const [formState, formAction] = useActionState(handleContact, initialState);
+  const [state, formAction, isPending] = useActionState(handleContact, initialState);
   const { toast } = useToast();
   const [showSuggestionDialog, setShowSuggestionDialog] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -61,23 +61,23 @@ export function Contact() {
   });
 
   useEffect(() => {
-    if (formState.message) {
-      if (formState.success) {
-        if(formState.aiSuggestion){
+    if (state.message) {
+      if (state.success) {
+        if(state.aiSuggestion){
             setShowSuggestionDialog(true);
         } else {
-             toast({ title: "Éxito", description: formState.message });
+             toast({ title: "Éxito", description: state.message });
         }
         form.reset();
       } else {
         toast({
           variant: 'destructive',
           title: "Error en el formulario",
-          description: formState.message,
+          description: state.message,
         });
       }
     }
-  }, [formState, toast, form]);
+  }, [state, toast, form]);
 
 
   return (
@@ -100,7 +100,6 @@ export function Contact() {
                   <form
                     ref={formRef}
                     action={formAction}
-                    onSubmit={form.handleSubmit(() => formAction(new FormData(formRef.current!)))}
                     className="space-y-6"
                   >
                     <FormField
@@ -150,8 +149,9 @@ export function Contact() {
                       type="submit"
                       className="w-full font-headline uppercase tracking-wider bg-transparent border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                       size="lg"
+                      disabled={isPending}
                     >
-                      Enviar Mensaje <Send className="ml-2 h-4 w-4" />
+                      {isPending ? 'Enviando...' : 'Enviar Mensaje'} <Send className="ml-2 h-4 w-4" />
                     </Button>
                   </form>
                 </Form>
@@ -175,9 +175,9 @@ export function Contact() {
           <div className="py-4">
             <h3 className="font-bold text-lg text-primary flex items-center gap-2">
                 <Lightbulb className="h-5 w-5" />
-                Plan Sugerido: {formState.aiSuggestion?.tier}
+                Plan Sugerido: {state.aiSuggestion?.tier}
             </h3>
-            <p className="text-muted-foreground mt-2 text-sm">{formState.aiSuggestion?.reason}</p>
+            <p className="text-muted-foreground mt-2 text-sm">{state.aiSuggestion?.reason}</p>
           </div>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setShowSuggestionDialog(false)}>
