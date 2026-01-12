@@ -1,7 +1,6 @@
 'use server';
 
 import { z } from 'zod';
-import { suggestTier } from '@/ai/flows/contact-form-tier-suggestion';
 import { Resend } from 'resend';
 import { ContactFormEmail } from '@/components/emails/contact-form-email';
 
@@ -15,10 +14,6 @@ const contactFormSchema = z.object({
 export type ContactFormState = {
   success: boolean;
   message: string;
-  aiSuggestion?: {
-    tier: string;
-    reason: string;
-  };
   errors?: {
     name?: string[];
     email?: string[];
@@ -47,52 +42,37 @@ export async function handleContact(
   const { name, email, message } = validatedFields.data;
 
   try {
-    const { suggestedTier, reason } = await suggestTier({ message });
-
-    // Initialize Resend and send email
-    try {
-      if (!process.env.RESEND_API_KEY) {
-        throw new Error('La clave de API de Resend no está configurada.');
-      }
-      if (!process.env.FROM_EMAIL) {
-        throw new Error('El correo electrónico de origen no está configurado.');
-      }
-      const resend = new Resend(process.env.RESEND_API_KEY);
-
-      await resend.emails.send({
-        from: process.env.FROM_EMAIL,
-        to: "koresyntaxlogic@gmail.com",
-        subject: `Nuevo mensaje de contacto de ${name}`,
-        react: ContactFormEmail({
-          name,
-          email,
-          message,
-          suggestedTier,
-          reason,
-        }),
-      });
-    } catch (error) {
-       console.error('Error al enviar el correo:', error);
-       // We can still continue and show success to the user even if email fails
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('La clave de API de Resend no está configurada.');
     }
+    if (!process.env.FROM_EMAIL) {
+      throw new Error('El correo electrónico de origen no está configurado.');
+    }
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    console.log('Lead received:', validatedFields.data);
-    console.log('AI Suggestion:', { suggestedTier, reason });
+    await resend.emails.send({
+      from: process.env.FROM_EMAIL,
+      to: "koresyntaxlogic@gmail.com",
+      subject: `Nuevo mensaje de contacto de ${name}`,
+      react: ContactFormEmail({
+        name,
+        email,
+        message,
+      }),
+    });
+
+    console.log('Lead received and email sent:', validatedFields.data);
 
     return {
       success: true,
       message: "¡Gracias por contactarnos! Tu mensaje ha sido recibido.",
-      aiSuggestion: {
-        tier: suggestedTier,
-        reason: reason,
-      },
       errors: null,
     };
   } catch (error) {
     console.error('Error al procesar el formulario de contacto:', error);
     return {
       success: false,
-      message: "Error al procesar el mensaje. Por favor, inténtelo de nuevo más tarde.",
+      message: "Error al enviar el mensaje. Por favor, inténtelo de nuevo más tarde.",
       errors: null,
     };
   }

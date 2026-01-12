@@ -14,16 +14,12 @@ interface ContactFormEmailProps {
   name: string;
   email: string;
   message: string;
-  suggestedTier: string;
-  reason: string;
 }
 
 export const ContactFormEmail = ({
   name,
   email,
   message,
-  suggestedTier,
-  reason,
 }: ContactFormEmailProps) => (
   <Html>
     <Head />
@@ -39,13 +35,6 @@ export const ContactFormEmail = ({
           <Text style={value}>{email}</Text>
           <Text style={label}>Mensaje:</Text>
           <Text style={value}>{message}</Text>
-        </Section>
-        <Section style={aiSection}>
-            <Heading as="h2" style={subHeading}>Sugerencia de la IA</Heading>
-            <Text style={label}>Plan Sugerido:</Text>
-            <Text style={value}>{suggestedTier}</Text>
-            <Text style={label}>Razón:</Text>
-            <Text style={value}>{reason}</Text>
         </Section>
       </Container>
     </Body>
@@ -74,14 +63,6 @@ const heading: React.CSSProperties = {
   margin: '30px 0',
 };
 
-const subHeading: React.CSSProperties = {
-    color: '#555',
-    fontSize: '18px',
-    fontWeight: 'bold',
-    margin: '20px 0',
-    padding: '0 40px',
-  };
-
 const paragraph: React.CSSProperties = {
   color: '#555',
   fontSize: '16px',
@@ -104,9 +85,3 @@ const value: React.CSSProperties = {
     padding: '0 40px',
     margin: '0 0 20px 0',
 };
-
-const aiSection: React.CSSProperties = {
-    backgroundColor: '#f0f8ff',
-    marginTop: '20px',
-    padding: '20px 0',
-}

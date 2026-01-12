@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,18 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Send, Bot, Lightbulb } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { AnimateOnScroll } from '../ui-elements/animate-on-scroll';
 import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Form,
   FormControl,
@@ -48,7 +39,6 @@ const initialState: ContactFormState = {
 export function Contact() {
   const [state, formAction, isPending] = useActionState(handleContact, initialState);
   const { toast } = useToast();
-  const [showSuggestionDialog, setShowSuggestionDialog] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const form = useForm<ContactFormValues>({
@@ -63,16 +53,12 @@ export function Contact() {
   useEffect(() => {
     if (state.message) {
       if (state.success) {
-        if(state.aiSuggestion){
-            setShowSuggestionDialog(true);
-        } else {
-             toast({ title: "Éxito", description: state.message });
-        }
+        toast({ title: "Éxito", description: state.message });
         form.reset();
       } else {
         toast({
           variant: 'destructive',
-          title: "Error en el formulario",
+          title: "Error",
           description: state.message,
         });
       }
@@ -160,32 +146,6 @@ export function Contact() {
           </AnimateOnScroll>
         </div>
       </section>
-
-      <AlertDialog open={showSuggestionDialog} onOpenChange={setShowSuggestionDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-                <Bot className="h-8 w-8 text-primary" />
-                <AlertDialogTitle className="font-headline text-2xl">Sugerencia de IA</AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="text-base text-muted-foreground pt-2">
-              Gracias por tu mensaje. Basado en los detalles de tu proyecto, nuestra IA sugiere el siguiente plan:
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
-            <h3 className="font-bold text-lg text-primary flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                Plan Sugerido: {state.aiSuggestion?.tier}
-            </h3>
-            <p className="text-muted-foreground mt-2 text-sm">{state.aiSuggestion?.reason}</p>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowSuggestionDialog(false)}>
-              Entendido
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }
