@@ -18,7 +18,7 @@ const SuggestTierInputSchema = z.object({
 export type SuggestTierInput = z.infer<typeof SuggestTierInputSchema>;
 
 const SuggestTierOutputSchema = z.object({
-  suggestedTier: z.string().describe('The suggested service tier based on the project details.'),
+  suggestedTier: z.string().describe('The suggested service tier based on the project details. Must be one of: "Básico", "Estándar", "Premium".'),
   reason: z.string().describe('The reasoning behind the suggested service tier.'),
 });
 export type SuggestTierOutput = z.infer<typeof SuggestTierOutputSchema>;
@@ -31,7 +31,21 @@ const prompt = ai.definePrompt({
   name: 'suggestTierPrompt',
   input: {schema: SuggestTierInputSchema},
   output: {schema: SuggestTierOutputSchema},
-  prompt: `You are an AI assistant that suggests the most appropriate service tier based on the user's project details provided in their message.\n\nAnalyze the following message and suggest a service tier (e.g., "Basic", "Standard", "Premium") that best fits their needs. Also, provide a brief reason for your suggestion.\n\nMessage: {{{message}}}`,
+  prompt: `You are an expert AI assistant that suggests the most appropriate service tier for a new client based on their project description.
+
+The available tiers are: "Básico", "Estándar", and "Premium".
+
+Analyze the user's message below. Based on the complexity, scope, and features requested, determine the best-fitting tier.
+
+Your response MUST be a valid JSON object matching this structure: { "suggestedTier": "string", "reason": "string" }.
+
+- The 'suggestedTier' field must be one of "Básico", "Estándar", or "Premium".
+- The 'reason' field must explain why you chose that tier.
+- If the message is unclear or doesn't provide enough information, default to the "Básico" tier and explain that more details are needed for a more accurate suggestion.
+
+User Message:
+{{{message}}}
+`,
 });
 
 const suggestTierFlow = ai.defineFlow(
