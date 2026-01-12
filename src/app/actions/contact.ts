@@ -2,6 +2,10 @@
 
 import { z } from 'zod';
 import { suggestTier } from '@/ai/flows/contact-form-tier-suggestion';
+import { Resend } from 'resend';
+import { ContactFormEmail } from '@/components/emails/contact-form-email';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -41,10 +45,29 @@ export async function handleContact(
     };
   }
   
-  const { message } = validatedFields.data;
+  const { name, email, message } = validatedFields.data;
 
   try {
     const { suggestedTier, reason } = await suggestTier({ message });
+
+    try {
+      await resend.emails.send({
+        from: process.env.FROM_EMAIL!,
+        to: process.env.TO_EMAIL!,
+        subject: `Nuevo mensaje de contacto de ${name}`,
+        react: ContactFormEmail({
+          name,
+          email,
+          message,
+          suggestedTier,
+          reason,
+        }),
+      });
+    } catch (error) {
+       console.error('Email sending error:', error);
+       // We can still continue even if email fails
+    }
+
     console.log('Lead received:', validatedFields.data);
     console.log('AI Suggestion:', { suggestedTier, reason });
 
