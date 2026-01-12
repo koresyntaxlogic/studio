@@ -44,28 +44,21 @@ export function Contact() {
   const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error en la respuesta del servidor');
-      }
+      const { name, email, message } = data;
+      const mailtoLink = `mailto:koresyntaxlogic@gmail.com?subject=Nuevo mensaje de contacto de ${encodeURIComponent(name)}&body=${encodeURIComponent(message)}%0A%0AEmail de contacto: ${encodeURIComponent(email)}`;
+      
+      window.location.href = mailtoLink;
 
       toast({
         title: "¡Gracias por tu mensaje!",
-        description: "Nos pondremos en contacto contigo pronto.",
+        description: "Se ha abierto tu cliente de correo para que puedas enviarnos el mensaje.",
       });
       form.reset();
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error al enviar el mensaje",
-        description: "Hubo un problema al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde o contáctanos directamente.",
+        title: "Error al preparar el mensaje",
+        description: "Hubo un problema al intentar abrir tu cliente de correo.",
       });
     } finally {
       setIsSubmitting(false);
@@ -147,7 +140,7 @@ export function Contact() {
                       {isSubmitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Enviando...
+                          Abriendo correo...
                         </>
                       ) : (
                         <>
