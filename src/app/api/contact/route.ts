@@ -1,9 +1,8 @@
-'use server';
-
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Resend } from 'resend';
 import { ContactFormEmail } from '@/components/emails/contact-form-email';
-
+import 'dotenv/config';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -11,43 +10,29 @@ const contactFormSchema = z.object({
   message: z.string().min(10, "El mensaje debe tener al menos 10 caracteres."),
 });
 
-export type ContactFormState = {
-  success: boolean;
-  message: string;
-  errors?: {
-    name?: string[];
-    email?: string[];
-    message?: string[];
-  } | null;
-};
-
-export async function handleContact(
-  prevState: ContactFormState,
-  formData: FormData
-): Promise<ContactFormState> {
-  const validatedFields = contactFormSchema.safeParse({
-    name: formData.get('name'),
-    email: formData.get('email'),
-    message: formData.get('message'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      success: false,
-      message: 'Error en el formulario. Por favor, corrija los campos.',
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-  
-  const { name, email, message } = validatedFields.data;
-
+export async function POST(req: Request) {
   try {
+    const body = await req.json();
+    const validatedFields = contactFormSchema.safeParse(body);
+
+    if (!validatedFields.success) {
+      return NextResponse.json({
+        message: 'Error en el formulario. Por favor, corrija los campos.',
+        errors: validatedFields.error.flatten().fieldErrors,
+      }, { status: 400 });
+    }
+
+    const { name, email, message } = validatedFields.data;
+
     if (!process.env.RESEND_API_KEY) {
-      throw new Error('La clave de API de Resend no está configurada.');
+      console.error('La clave de API de Resend no está configurada.');
+      return NextResponse.json({ message: "Error del servidor: La configuración de correo no está completa." }, { status: 500 });
     }
     if (!process.env.FROM_EMAIL) {
-      throw new Error('El correo electrónico de origen no está configurado.');
+      console.error('El correo electrónico de origen no está configurado.');
+      return NextResponse.json({ message: "Error del servidor: La configuración de correo no está completa." }, { status: 500 });
     }
+
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     await resend.emails.send({
@@ -61,19 +46,16 @@ export async function handleContact(
       }),
     });
 
-    console.log('Lead received and email sent:', validatedFields.data);
-
-    return {
+    return NextResponse.json({
       success: true,
       message: "¡Gracias por contactarnos! Tu mensaje ha sido recibido.",
-      errors: null,
-    };
+    }, { status: 200 });
+
   } catch (error) {
     console.error('Error al procesar el formulario de contacto:', error);
-    return {
+    return NextResponse.json({
       success: false,
       message: "Error al enviar el mensaje. Por favor, inténtelo de nuevo más tarde.",
-      errors: null,
-    };
+    }, { status: 500 });
   }
 }

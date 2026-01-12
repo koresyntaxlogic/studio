@@ -1,11 +1,10 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useTransition } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { handleContact, type ContactFormState } from '@/app/actions/contact';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,14 +30,9 @@ const contactFormSchema = z.object({
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
-const initialState: ContactFormState = {
-  success: false,
-  message: '',
-};
-
 export function Contact() {
-  const [state, formAction, isPending] = useActionState(handleContact, initialState);
   const { toast } = useToast();
+  const [isPending, setIsPending] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const form = useForm<ContactFormValues>({
@@ -50,20 +44,35 @@ export function Contact() {
     },
   });
 
-  useEffect(() => {
-    if (state.message) {
-      if (state.success) {
-        toast({ title: "Éxito", description: state.message });
+  const onSubmit = async (data: ContactFormValues) => {
+    setIsPending(true);
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({ title: "Éxito", description: result.message });
         form.reset();
       } else {
-        toast({
-          variant: 'destructive',
-          title: "Error",
-          description: state.message,
-        });
+        throw new Error(result.message || 'Error al enviar el mensaje.');
       }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: "Error",
+        description: error.message || "Error al enviar el mensaje. Por favor, inténtelo de nuevo más tarde.",
+      });
+    } finally {
+      setIsPending(false);
     }
-  }, [state, toast, form]);
+  };
 
 
   return (
@@ -85,7 +94,7 @@ export function Contact() {
                 <Form {...form}>
                   <form
                     ref={formRef}
-                    action={formAction}
+                    onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6"
                   >
                     <FormField
