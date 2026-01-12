@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
+import { useToast } from '@/hooks/use-toast';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -29,6 +29,7 @@ const contactFormSchema = z.object({
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export function Contact() {
+  const { toast } = useToast();
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -39,9 +40,23 @@ export function Contact() {
   });
 
   const onSubmit = (data: ContactFormValues) => {
-    const subject = encodeURIComponent(`Nuevo mensaje de: ${data.name}`);
-    const body = encodeURIComponent(`Nombre: ${data.name}\nEmail: ${data.email}\n\nMensaje:\n${data.message}`);
-    window.location.href = `mailto:koresyntaxlogic@gmail.com?subject=${subject}&body=${body}`;
+    try {
+      const subject = encodeURIComponent(`Nuevo mensaje de: ${data.name}`);
+      const body = encodeURIComponent(`Nombre: ${data.name}\nEmail: ${data.email}\n\nMensaje:\n${data.message}`);
+      window.location.href = `mailto:koresyntaxlogic@gmail.com?subject=${subject}&body=${body}`;
+      
+      toast({
+        title: "¡Gracias por tu mensaje!",
+        description: "Se ha abierto tu cliente de correo para que puedas enviar el mensaje.",
+      });
+      form.reset();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al abrir el cliente de correo",
+        description: "No pudimos abrir tu aplicación de correo. Por favor, inténtalo de nuevo o contáctanos directamente.",
+      });
+    }
   };
 
 
