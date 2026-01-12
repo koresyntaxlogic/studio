@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -33,7 +33,6 @@ type ContactFormValues = z.infer<typeof contactFormSchema>;
 export function Contact() {
   const { toast } = useToast();
   const [isPending, setIsPending] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -93,7 +92,6 @@ export function Contact() {
               <CardContent className="p-0 sm:p-2">
                 <Form {...form}>
                   <form
-                    ref={formRef}
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6"
                   >
