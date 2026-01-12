@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Send } from 'lucide-react';
 import { AnimateOnScroll } from '../ui-elements/animate-on-scroll';
-import { useToast } from '@/hooks/use-toast';
 import {
   Form,
   FormControl,
@@ -31,9 +29,6 @@ const contactFormSchema = z.object({
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export function Contact() {
-  const { toast } = useToast();
-  const [isPending, setIsPending] = useState(false);
-
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -43,34 +38,10 @@ export function Contact() {
     },
   });
 
-  const onSubmit = async (data: ContactFormValues) => {
-    setIsPending(true);
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({ title: "Éxito", description: result.message });
-        form.reset();
-      } else {
-        throw new Error(result.message || 'Error al enviar el mensaje.');
-      }
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: "Error",
-        description: error.message || "Error al enviar el mensaje. Por favor, inténtelo de nuevo más tarde.",
-      });
-    } finally {
-      setIsPending(false);
-    }
+  const onSubmit = (data: ContactFormValues) => {
+    const subject = encodeURIComponent(`Nuevo mensaje de: ${data.name}`);
+    const body = encodeURIComponent(`Nombre: ${data.name}\nEmail: ${data.email}\n\nMensaje:\n${data.message}`);
+    window.location.href = `mailto:koresyntaxlogic@gmail.com?subject=${subject}&body=${body}`;
   };
 
 
@@ -142,9 +113,8 @@ export function Contact() {
                       type="submit"
                       className="w-full font-headline uppercase tracking-wider bg-transparent border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                       size="lg"
-                      disabled={isPending}
                     >
-                      {isPending ? 'Enviando...' : 'Enviar Mensaje'} <Send className="ml-2 h-4 w-4" />
+                      Enviar Mensaje <Send className="ml-2 h-4 w-4" />
                     </Button>
                   </form>
                 </Form>
