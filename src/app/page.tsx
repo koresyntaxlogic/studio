@@ -31,6 +31,10 @@ export default function Home() {
     });
   }, [toast, isClient]);
 
+  if (!isClient) {
+    return null; // or a loading spinner
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
