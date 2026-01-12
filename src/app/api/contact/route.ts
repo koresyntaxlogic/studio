@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Resend } from 'resend';
@@ -23,20 +24,24 @@ export async function POST(req: Request) {
 
     const { name, email, message } = validatedFields.data;
 
-    if (!process.env.RESEND_API_KEY) {
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const fromEmail = process.env.FROM_EMAIL;
+    const toEmail = "koresyntaxlogic@gmail.com";
+
+    if (!resendApiKey) {
       console.error('La clave de API de Resend no está configurada.');
-      return NextResponse.json({ message: "Error del servidor: La configuración de correo no está completa." }, { status: 500 });
+      return NextResponse.json({ message: "Error del servidor: La configuración de correo no está completa (API Key)." }, { status: 500 });
     }
-    if (!process.env.FROM_EMAIL) {
+    if (!fromEmail) {
       console.error('El correo electrónico de origen no está configurado.');
-      return NextResponse.json({ message: "Error del servidor: La configuración de correo no está completa." }, { status: 500 });
+      return NextResponse.json({ message: "Error del servidor: La configuración de correo no está completa (From Email)." }, { status: 500 });
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resend = new Resend(resendApiKey);
 
     await resend.emails.send({
-      from: process.env.FROM_EMAIL,
-      to: "koresyntaxlogic@gmail.com",
+      from: fromEmail,
+      to: toEmail,
       subject: `Nuevo mensaje de contacto de ${name}`,
       react: ContactFormEmail({
         name,
