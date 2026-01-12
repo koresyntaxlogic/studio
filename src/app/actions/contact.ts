@@ -5,7 +5,6 @@ import { suggestTier } from '@/ai/flows/contact-form-tier-suggestion';
 import { Resend } from 'resend';
 import { ContactFormEmail } from '@/components/emails/contact-form-email';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
@@ -50,10 +49,19 @@ export async function handleContact(
   try {
     const { suggestedTier, reason } = await suggestTier({ message });
 
+    // Initialize Resend and send email
     try {
+      if (!process.env.RESEND_API_KEY) {
+        throw new Error('La clave de API de Resend no está configurada.');
+      }
+      if (!process.env.FROM_EMAIL) {
+        throw new Error('El correo electrónico de origen no está configurado.');
+      }
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
       await resend.emails.send({
-        from: process.env.FROM_EMAIL!,
-        to: process.env.TO_EMAIL!,
+        from: process.env.FROM_EMAIL,
+        to: "koresyntaxlogic@gmail.com",
         subject: `Nuevo mensaje de contacto de ${name}`,
         react: ContactFormEmail({
           name,
@@ -64,8 +72,8 @@ export async function handleContact(
         }),
       });
     } catch (error) {
-       console.error('Email sending error:', error);
-       // We can still continue even if email fails
+       console.error('Error al enviar el correo:', error);
+       // We can still continue and show success to the user even if email fails
     }
 
     console.log('Lead received:', validatedFields.data);
@@ -81,7 +89,7 @@ export async function handleContact(
       errors: null,
     };
   } catch (error) {
-    console.error('Error handling contact form:', error);
+    console.error('Error al procesar el formulario de contacto:', error);
     return {
       success: false,
       message: "Error al procesar el mensaje. Por favor, inténtelo de nuevo más tarde.",
